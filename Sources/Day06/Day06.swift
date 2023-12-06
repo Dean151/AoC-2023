@@ -15,9 +15,58 @@ import Common
 
 @main
 struct Day06: Puzzle {
-    typealias Input = String
-    typealias OutputPartOne = Never
-    typealias OutputPartTwo = Never
+    typealias Input = [Race]
+    typealias OutputPartOne = Int
+    typealias OutputPartTwo = Int
+}
+
+let example = """
+Time:      7  15   30
+Distance:  9  40  200
+"""
+
+public struct Race {
+    let time: Int
+    let distance: Int
+
+    var minPressWin: Int {
+        (1..<time).first(where: wins).unsafelyUnwrapped
+    }
+
+    var maxPressWin: Int {
+        (1..<time).reversed().first(where: wins).unsafelyUnwrapped
+    }
+
+    func wins(for press: Int) -> Bool {
+        press * (time - press) > distance
+    }
+}
+
+extension Array<Race>: Parsable {
+    public static func parse(raw: String) throws -> Array<Race> {
+        let lines = raw.components(separatedBy: .newlines)
+        guard lines.count == 2 else {
+            throw InputError.unexpectedInput(unrecognized: raw)
+        }
+        let times = lines[0].components(separatedBy: .whitespaces).compactMap(Int.init)
+        let distances = lines[1].components(separatedBy: .whitespaces).compactMap(Int.init)
+        guard times.count == distances.count else {
+            throw InputError.unexpectedInput(unrecognized: raw)
+        }
+
+        var races: [Race] = []
+        for (time, distance) in zip(times, distances) {
+            races.append(.init(time: time, distance: distance))
+        }
+        return races
+    }
+
+    var combined: Race {
+        func combine(_ array: [Int]) -> Int {
+            Int(array.map(String.init).joined()).unsafelyUnwrapped
+        }
+        return .init(time: combine(map(\.time)), distance: combine(map(\.distance)))
+    }
 }
 
 // MARK: - PART 1
@@ -25,13 +74,14 @@ struct Day06: Puzzle {
 extension Day06 {
     static var partOneExpectations: [any Expectation<Input, OutputPartOne>] {
         [
-            // TODO: add expectations for part 1
+            assert(expectation: 288, fromRaw: example)
         ]
     }
 
     static func solvePartOne(_ input: Input) async throws -> OutputPartOne {
-        // TODO: Solve part 1 :)
-        throw ExecutionError.notSolved
+        input.map { race in
+            race.maxPressWin - race.minPressWin + 1
+        }.reduce(1, *)
     }
 }
 
@@ -40,12 +90,12 @@ extension Day06 {
 extension Day06 {
     static var partTwoExpectations: [any Expectation<Input, OutputPartTwo>] {
         [
-            // TODO: add expectations for part 2
+            assert(expectation: 71503, fromRaw: example)
         ]
     }
 
     static func solvePartTwo(_ input: Input) async throws -> OutputPartTwo {
-        // TODO: Solve part 2 :)
-        throw ExecutionError.notSolved
+        let race = input.combined
+        return race.maxPressWin - race.minPressWin + 1
     }
 }
