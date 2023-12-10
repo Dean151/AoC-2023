@@ -185,53 +185,73 @@ struct Maze: Parsable {
         return .init(start: .init(x: start.x * 3, y: start.y * 3), pipes: expandedPipes, loop: expandedLoop)
     }
 
-    var enclosedTiles: Set<Coordinate2D> {
+    var enclosedTilesCount: Int {
         get throws {
+            let (minX, maxX) = loop.map(\.x).minAndMax().unsafelyUnwrapped
+            let (minY, maxY) = loop.map(\.y).minAndMax().unsafelyUnwrapped
             let expanded = self.expanded
-            let expandedEnclosed = try expanded.naiveEnclosedTiles
-            let (minX, maxX) = expandedEnclosed.map({ $0.x / 3 }).minAndMax().unsafelyUnwrapped
-            let (minY, maxY) = expandedEnclosed.map({ $0.y / 3 }).minAndMax().unsafelyUnwrapped
-            var enclosed: Set<Coordinate2D> = []
+            let expandedOutside = try expanded.naiveOutsideTiles
+            let (outsideMinX, outsideMaxX) = expandedOutside.map({ $0.x }).minAndMax().unsafelyUnwrapped
+            let (outsideMinY, outsideMaxY) = expandedOutside.map({ $0.y }).minAndMax().unsafelyUnwrapped
+            var outside: Set<Coordinate2D> = []
+
             for x in minX...maxX {
                 for y in minY...maxY {
                     let expandedCenter = Coordinate2D(x: x*3+1, y: y*3+1)
-                    guard expandedEnclosed.contains(expandedCenter) else {
+                    guard expandedOutside.contains(expandedCenter) else {
                         continue
                     }
-                    guard expandedCenter.allNeighbors.allSatisfy({ expandedEnclosed.contains($0) }) else {
+                    guard expandedCenter.allNeighbors
+                        .filter({ outsideMinX <= $0.x && $0.x <= outsideMaxX && outsideMinY <= $0.y && $0.y <= outsideMaxY })
+                        .allSatisfy({ expandedOutside.contains($0) }) else {
                         continue
                     }
-                    enclosed.insert(.init(x: x, y: y))
+                    outside.insert(.init(x: x, y: y))
                 }
             }
-            return enclosed
+            let size = (maxY-minY+1)*(maxX-minX+1)
+            return size - loop.count - outside.count
         }
     }
 
-    var naiveEnclosedTiles: Set<Coordinate2D> {
+    var naiveOutsideTiles: Set<Coordinate2D> {
         get throws {
             let (minX, maxX) = loop.map(\.x).minAndMax().unsafelyUnwrapped
             let (minY, maxY) = loop.map(\.y).minAndMax().unsafelyUnwrapped
 
-            var inside: Set<Coordinate2D> = []
+            // Find the "holes", and fill from there
             var outside: Set<Coordinate2D> = []
-
-            for x in minX+1...maxX-1 {
-                for y in minY+1...maxY-1 {
+            for x in [minX, maxX] {
+                for y in minY...maxY {
                     let current = Coordinate2D(x: x, y: y)
-                    if loop.contains(current) || inside.contains(current) || outside.contains(current) {
+                    if loop.contains(current) {
                         continue
                     }
-                    let (found, coordinates) = try findPathOut(limits: (minX...maxX, minY...maxY), from: current)
-                    if found {
-                        outside.formUnion(coordinates)
-                    } else {
-                        inside.formUnion(coordinates)
+                    outside.insert(current)
+                }
+            }
+            for y in [minY, maxY] {
+                for x in minX...maxX {
+                    let current = Coordinate2D(x: x, y: y)
+                    if loop.contains(current) {
+                        continue
                     }
+                    outside.insert(current)
                 }
             }
 
-            return inside
+            var upcoming = outside
+            while let current = upcoming.popFirst() {
+                outside.insert(current)
+                let neighbors = current.allNeighbors
+                let relevant = neighbors.filter {
+                    minX <= $0.x && $0.x <= maxX &&
+                    minY <= $0.y && $0.y <= maxY &&
+                    !outside.contains($0) && !loop.contains($0) && !upcoming.contains($0)
+                }
+                upcoming.formUnion(relevant)
+            }
+            return outside
         }
     }
 
@@ -318,6 +338,6 @@ extension Day10 {
     }
 
     static func solvePartTwo(_ input: Input) async throws -> OutputPartTwo {
-        try input.enclosedTiles.count
+        try input.enclosedTilesCount
     }
 }
