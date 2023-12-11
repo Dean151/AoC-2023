@@ -56,6 +56,10 @@ extension Coordinate2D {
         }
         return nil
     }
+
+    public func mannathanDistance(from other: Coordinate2D) -> Int {
+        abs(other.x - x) + abs(other.y - y)
+    }
 }
 
 
