@@ -29,7 +29,7 @@ let example = """
 ?###???????? 3,2,1
 """
 
-struct SpringsRow: Parsable, CustomStringConvertible {
+struct SpringsRow: Parsable {
     enum State: Character {
         case unknown = "?"
         case operational = "."
@@ -38,10 +38,6 @@ struct SpringsRow: Parsable, CustomStringConvertible {
 
     let springs: [State]
     let groups: [Int]
-
-    var description: String {
-        "\"" + String(springs.map(\.rawValue)) + " " + groups.map(\.description).joined(separator: ",") + "\""
-    }
 
     var possibleCombinasons: Int {
         Self.getPossibleCombinasons(springs: springs, groups: groups)
@@ -62,8 +58,8 @@ struct SpringsRow: Parsable, CustomStringConvertible {
     }
 
     private static var cache: [String: Int] = [:]
-    private static func getPossibleCombinasons(springs: [State], groups: [Int]) -> Int {
-        let key = SpringsRow(springs: springs, groups: groups).description
+    private static func getPossibleCombinasons<Springs: Collection<State>, Groups: Collection<Int>>(springs: Springs, groups: Groups) -> Int where Springs.Index == Int, Groups.Index == Int {
+        let key = String(springs.map(\.rawValue)) + " " + groups.map(\.description).joined(separator: ",")
         if let cached = cache[key] {
             return cached
         }
@@ -72,7 +68,7 @@ struct SpringsRow: Parsable, CustomStringConvertible {
         return value
     }
 
-    private static func computePossibleCombinasons(springs: [State], groups: [Int]) -> Int {
+    private static func computePossibleCombinasons<Springs: Collection<State>, Groups: Collection<Int>>(springs: Springs, groups: Groups) -> Int where Springs.Index == Int, Groups.Index == Int {
         guard let first = springs.first else {
             return groups.isEmpty ? 1 : 0
         }
@@ -81,21 +77,21 @@ struct SpringsRow: Parsable, CustomStringConvertible {
             guard let group = groups.first, springs.count >= group else {
                 return 0
             }
-            if springs[0..<group].contains(.operational) {
+            if springs[springs.startIndex..<springs.startIndex + group].contains(.operational) {
                 return 0
             }
-            if springs[group...].first == .broken {
+            if springs[(springs.startIndex + group)...].first == .broken {
                 return 0
             }
-            if springs.count > groups[0] && springs[groups[0]] == .unknown {
-                return getPossibleCombinasons(springs: Array(springs[(groups[0]+1)...].trimmingPrefix(while: { $0 == .operational })), groups: Array(groups[1...]))
+            if springs.count > group && springs[springs.startIndex + group] == .unknown {
+                return getPossibleCombinasons(springs: springs[(springs.startIndex + group + 1)...].trimmingPrefix(while: { $0 == .operational }), groups: groups[(groups.startIndex + 1)...])
             }
-            return getPossibleCombinasons(springs: Array(springs[groups[0]...].trimmingPrefix(while: { $0 == .operational })), groups: Array(groups[1...]))
+            return getPossibleCombinasons(springs: springs[(springs.startIndex + group)...].trimmingPrefix(while: { $0 == .operational }), groups: groups[(groups.startIndex + 1)...])
         case .operational:
-            return getPossibleCombinasons(springs: Array(springs.trimmingPrefix(while: { $0 == .operational })), groups: groups)
+            return getPossibleCombinasons(springs: springs.trimmingPrefix(while: { $0 == .operational }), groups: groups)
         case .unknown:
-            return getPossibleCombinasons(springs: [.broken] + springs[1...], groups: groups)
-                + getPossibleCombinasons(springs: [.operational] + springs[1...], groups: groups)
+            return getPossibleCombinasons(springs: [.broken] + springs[(springs.startIndex + 1)...], groups: groups)
+            + getPossibleCombinasons(springs: [.operational] + springs[(springs.startIndex + 1)...], groups: groups)
         }
     }
 }
