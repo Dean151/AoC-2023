@@ -44,6 +44,19 @@ extension Coordinate2D {
         adjectiveNeighbors.union(diagonalNeighbors)
     }
 
+    public func moved(to direction: Direction2D) -> Coordinate2D {
+        switch direction {
+        case .north:
+            return .init(x: x, y: y - 1)
+        case .south:
+            return .init(x: x, y: y + 1)
+        case .west:
+            return .init(x: x - 1, y: y)
+        case .east:
+            return .init(x: x + 1, y: y)
+        }
+    }
+
     public func direction(to other: Coordinate2D) -> Direction2D? {
         if self == other {
             return nil
