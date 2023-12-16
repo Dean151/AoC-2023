@@ -12,7 +12,7 @@ public struct Coordinate2D: Hashable, Equatable {
 }
 
 extension Coordinate2D {
-    static let zero = Coordinate2D(x: 0, y: 0)
+    public static let zero = Coordinate2D(x: 0, y: 0)
 }
 
 extension Coordinate2D: CustomStringConvertible {
@@ -42,6 +42,10 @@ extension Coordinate2D {
 
     public var allNeighbors: Set<Coordinate2D> {
         adjectiveNeighbors.union(diagonalNeighbors)
+    }
+
+    public func outOfBounds(width: Int, height: Int) -> Bool {
+        !(0..<width).contains(x) || !(0..<height).contains(y)
     }
 
     public func moved(to direction: Direction2D) -> Coordinate2D {
