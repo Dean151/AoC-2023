@@ -186,7 +186,6 @@ extension Day13 {
         ]
     }
 
-    // Too low: 14599
     static func solvePartOne(_ input: Input) async throws -> OutputPartOne {
         input.map(\.reflection).reduce(0) {
             switch $1 {

@@ -48,16 +48,16 @@ extension Coordinate2D {
         !(0..<width).contains(x) || !(0..<height).contains(y)
     }
 
-    public func moved(to direction: Direction2D) -> Coordinate2D {
+    public func moved(to direction: Direction2D, distance: Int = 1) -> Coordinate2D {
         switch direction {
         case .north:
-            return .init(x: x, y: y - 1)
+            return .init(x: x, y: y - distance)
         case .south:
-            return .init(x: x, y: y + 1)
+            return .init(x: x, y: y + distance)
         case .west:
-            return .init(x: x - 1, y: y)
+            return .init(x: x - distance, y: y)
         case .east:
-            return .init(x: x + 1, y: y)
+            return .init(x: x + distance, y: y)
         }
     }
 
