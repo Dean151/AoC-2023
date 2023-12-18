@@ -82,9 +82,48 @@ extension Coordinate2D {
 
 // MARK: - Direction
 
-public enum Direction2D {
+public enum Direction2D: CaseIterable, CustomStringConvertible {
     case north
     case south
     case west
     case east
+
+    public var description: String {
+        switch self {
+        case .north:
+            return "^"
+        case .south:
+            return "v"
+        case .west:
+            return "<"
+        case .east:
+            return ">"
+        }
+    }
+
+    public var opposite: Self {
+        switch self {
+        case .north:
+            return .south
+        case .south:
+            return .north
+        case .west:
+            return .east
+        case .east:
+            return .west
+        }
+    }
+
+    public var orthogonals: (right: Self, left: Self) {
+        switch self {
+        case .north:
+            return (.east, .west)
+        case .south:
+            return (.west, .east)
+        case .west:
+            return (.north, .south)
+        case .east:
+            return (.south, .north)
+        }
+    }
 }
