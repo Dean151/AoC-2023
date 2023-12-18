@@ -153,7 +153,7 @@ struct Beam: Hashable {
     let direction: Direction2D
 
     var next: Beam {
-        return .init(position: position.moved(to: direction), direction: direction)
+        return .init(position: position.moved(along: direction), direction: direction)
     }
 }
 

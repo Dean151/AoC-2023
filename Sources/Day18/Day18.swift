@@ -103,7 +103,7 @@ struct Lagoon {
         // Resolve the corners
         for instruction in instructions {
             perimeter += instruction.meters
-            current = current.moved(to: instruction.direction, distance: instruction.meters)
+            current = current.moved(along: instruction.direction, distance: instruction.meters)
             corners.append(current)
         }
         self.corners = corners

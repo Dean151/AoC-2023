@@ -94,7 +94,7 @@ struct Dish: Parsable, Hashable, CustomStringConvertible {
                 }
                 var potential = current
                 repeat {
-                    let next = potential.moved(to: direction)
+                    let next = potential.moved(along: direction)
                     if newRocks[next] != nil || next.y < 0 || next.y >= height {
                         newRocks[potential] = .rounded
                         continue yLoop
@@ -127,7 +127,7 @@ struct Dish: Parsable, Hashable, CustomStringConvertible {
                 }
                 var potential = current
                 repeat {
-                    let next = potential.moved(to: direction)
+                    let next = potential.moved(along: direction)
                     if newRocks[next] != nil || next.x < 0 || next.x >= width {
                         newRocks[potential] = .rounded
                         continue xLoop

@@ -48,7 +48,7 @@ extension Coordinate2D {
         !(0..<width).contains(x) || !(0..<height).contains(y)
     }
 
-    public func moved(to direction: Direction2D, distance: Int = 1) -> Coordinate2D {
+    public func moved(along direction: Direction2D, distance: Int = 1) -> Coordinate2D {
         switch direction {
         case .north:
             return .init(x: x, y: y - distance)
